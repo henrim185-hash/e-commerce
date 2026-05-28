@@ -4,7 +4,9 @@ import cors from 'cors'
 // import des routes
 import productRoutes from './routes/product.route.js'
 import userRoutes from './routes/user.route.js'
+import categoryRoutes from './routes/category.route.js'
 
+// app
 const app = express()
 
 // middlewares
@@ -26,6 +28,7 @@ app.get('/', (req, res) => {
 // routes produits
 app.use('/api', productRoutes)
 app.use('/api', userRoutes)
+app.use('/api', categoryRoutes)
 
 
 
