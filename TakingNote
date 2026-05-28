@@ -1,0 +1,139 @@
+Notions à approfondir:
+POOL et CommonJS et Module ES6
+
+
+
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100),
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role VARCHAR(20) DEFAULT 'customer',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
+
+CREATE TABLE categories (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  slug VARCHAR(120)
+);
+
+
+
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  category_id INT REFERENCES categories(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
+
+CREATE TABLE product_variants (
+  id SERIAL PRIMARY KEY,
+  product_id INT REFERENCES products(id) ON DELETE CASCADE,
+  size VARCHAR(20),
+  color VARCHAR(50),
+  sku VARCHAR(100) UNIQUE,
+  price NUMERIC(10,2) NOT NULL,
+  stock INT DEFAULT 0,
+  is_default BOOLEAN DEFAULT FALSE
+);
+
+
+
+
+CREATE TABLE product_images (
+  id SERIAL PRIMARY KEY,
+  variant_id INT REFERENCES product_variants(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  position INT DEFAULT 0,
+  is_cover BOOLEAN DEFAULT FALSE
+);
+
+
+
+
+CREATE TABLE carts (
+  id SERIAL PRIMARY KEY,
+  user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
+
+
+CREATE TABLE cart_items (
+  id SERIAL PRIMARY KEY,
+  cart_id INT REFERENCES carts(id) ON DELETE CASCADE,
+  variant_id INT REFERENCES product_variants(id) ON DELETE CASCADE,
+  quantity INT DEFAULT 1
+);
+
+
+
+
+
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  total_price NUMERIC(10,2) NOT NULL,
+  status VARCHAR(30) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
+
+
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+  variant_id INT REFERENCES product_variants(id),
+  quantity INT NOT NULL,
+  price NUMERIC(10,2) NOT NULL
+);
+
+
+
+
+CREATE TABLE reviews (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  product_id INT REFERENCES products(id) ON DELETE CASCADE,
+  rating INT CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  verified_purchase BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
+
+
+CREATE TABLE addresses (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  full_name VARCHAR(150),
+  phone VARCHAR(30),
+  city VARCHAR(100),
+  street TEXT,
+  is_default BOOLEAN DEFAULT FALSE
+);
+
+
+
+12. INDEXS (IMPORTANT PERFORMANCE)
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_variants_product ON product_variants(product_id);
+CREATE INDEX idx_cart_items_cart ON cart_items(cart_id);
+CREATE INDEX idx_orders_user ON orders(user_id);
+CREATE INDEX idx_reviews_product ON reviews(product_id);
+
+
+-- création base
+CREATE DATABASE ecommerce_db;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
