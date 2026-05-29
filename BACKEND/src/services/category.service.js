@@ -61,6 +61,28 @@ export const verify_category_data = name => {
     if (!name || name.trim() === '') {
         throw new Error('Category name is required')
     }
+
+    const trimmedName = name.trim()
+
+    // Vérifier la longueur
+    if (trimmedName.length < 2) {
+        throw new Error('Category name must be at least 2 characters')
+    }
+    if (trimmedName.length > 100) {
+        throw new Error('Category name must not exceed 100 characters')
+    }
+
+    // Vérifier les caractères (lettres, chiffres, espaces, tirets)
+    // Supporte les accents
+    if (!/^[a-zA-Z0-9\s\u00C0-\u00FF-]+$/.test(trimmedName)) {
+        throw new Error('Category name contains invalid characters')
+    }
+
+    // Éviter les noms trop génériques ou dangereux
+    const blacklisted = ['admin', 'system', 'null', 'undefined', 'drop', 'delete']
+    if (blacklisted.includes(trimmedName.toLowerCase())) {
+        throw new Error('Category name not allowed')
+    }
 }
 
 // Valider les données d'une catégorie (update)
@@ -80,6 +102,11 @@ export const create_category = async name => {
     // Valider les données
     verify_category_data(name)
 
+    // ✅ Vérifier si une catégorie avec le même nom existe déjà
+    if (await category_exists_by_name(name)) {
+        throw new Error('A category with this name already exists')
+    }
+
     // Générer le slug
     let slug = generateSlug(name)
 
@@ -98,8 +125,15 @@ export const create_category = async name => {
 }
 
 // Récupérer toutes les catégories
-export const get_all_categories = async () => {
-    const result = await pool.query('SELECT * FROM categories ORDER BY name')
+export const get_all_categories = async (limit = 100, offset = 0) => {
+    // Limiter le nombre de résultats
+    const maxLimit = Math.min(limit, 500) // Maximum 500 catégories
+    const validOffset = Math.max(0, offset)
+
+    const result = await pool.query('SELECT * FROM categories ORDER BY name LIMIT $1 OFFSET $2', [
+        maxLimit,
+        validOffset,
+    ])
     return result.rows
 }
 
@@ -116,10 +150,24 @@ export const get_category_by_slug = async slug => {
 }
 
 // Rechercher une catégorie par nom
-export const search_categories_by_name = async (searchTerm) => {
+export const search_categories_by_name = async searchTerm => {
+    // Validation
+    if (!searchTerm || searchTerm.trim() === '') {
+        return []
+    }
+
+    // Nettoyer le terme de recherche
+    const sanitizedTerm = searchTerm
+        .trim()
+        .replace(/[%_]/g, '\\$&') // Échappe % et _
+        .substring(0, 100) // Limiter la longueur
+
     const result = await pool.query(
-        'SELECT * FROM categories WHERE name ILIKE $1 ORDER BY name',
-        [`%${searchTerm}%`]
+        `SELECT * FROM categories 
+         WHERE name ILIKE $1 
+         ORDER BY name 
+         LIMIT 50`, // Ajouter une limite
+        [`%${sanitizedTerm}%`],
     )
     return result.rows
 }

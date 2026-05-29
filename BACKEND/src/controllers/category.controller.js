@@ -18,7 +18,14 @@ export const createCategory = async (req, res) => {
                 success: false,
                 message: err.message,
             })
+        } else if (err.message === 'A category with this name already exists') {
+            res.status(409).json({
+                // 409 Conflict
+                success: false,
+                message: err.message,
+            })
         } else {
+            console.error('Error creating category:', err)
             res.status(500).json({
                 success: false,
                 message: 'Internal server error',

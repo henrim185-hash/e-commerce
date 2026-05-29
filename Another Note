@@ -1,0 +1,117 @@
+// services/category_services.js - Gestion complète des erreurs DB
+
+const handleDBError = (err, context) => {
+    // Timeouts
+    if (err.code === '57014') {
+        throw new Error('Database query timeout - please retry')
+    }
+
+    // Violation de contrainte unique (duplicate key)
+    if (err.code === '23505') {
+        if (err.constraint === 'categories_name_key') {
+            throw new Error('Category name already exists')
+        }
+        if (err.constraint === 'categories_slug_key') {
+            throw new Error('Category slug already exists')
+        }
+        throw new Error('Duplicate entry')
+    }
+
+    // Violation de clé étrangère
+    if (err.code === '23503') {
+        throw new Error('Operation failed due to existing references')
+    }
+
+    // Check violation (constraint CHECK)
+    if (err.code === '23514') {
+        throw new Error('Data validation failed')
+    }
+
+    // Connexion refusée
+    if (err.code === '08006' || err.code === '08001') {
+        throw new Error('Database connection failed')
+    }
+
+    // Deadlock
+    if (err.code === '40P01') {
+        throw new Error('Database deadlock detected - please retry')
+    }
+
+    // Serialization failure
+    if (err.code === '40001') {
+        throw new Error('Please retry the operation')
+    }
+
+    // Syntax error dans la requête (bug de notre code)
+    if (err.code === '42601') {
+        console.error(`SQL Syntax error in ${context}:`, err)
+        throw new Error('Internal database error')
+    }
+
+    // Erreur inconnue - logguer pour debug
+    console.error(`Unhandled database error in ${context}:`, err)
+    throw new Error('Database operation failed')
+}
+
+
+
+// 1. CHAMP REQUIS
+throw new Error('Category name is required')
+throw new Error('Email field cannot be empty')
+
+// 2. LONGUEUR
+throw new Error('Category name must be at least 2 characters')
+throw new Error('Password must be at least 8 characters')
+throw new Error('Description cannot exceed 500 characters')
+
+// 3. FORMAT
+throw new Error('Invalid email format')
+throw new Error('Category name contains invalid characters')
+throw new Error('Price must be a positive number')
+throw new Error('Date must be in ISO 8601 format')
+
+// 4. VALEUR
+throw new Error('Price cannot be negative')
+throw new Error('Quantity must be between 1 and 999')
+throw new Error('Status must be one of: active, inactive, archived')
+
+// 5. COMBINAISON
+throw new Error('Start date must be before end date')
+throw new Error('Discount cannot exceed 100%')
+
+
+
+
+// Comment traiter ces erreurs
+export const createCategory = async (req, res) => {
+    try {
+        const result = await category_services.create_category(req.body.name)
+        res.json(result)
+        
+    } catch (err) {
+        // 📊 Catégorisation
+        if (err.message.includes('Category name')) {
+            // Validation - 400
+            return res.status(400).json({ success: false, message: err.message })
+        }
+        
+        if (err.message.includes('already exists') || 
+            err.message.includes('Cannot delete')) {
+            // Métier - 409
+            return res.status(409).json({ success: false, message: err.message })
+        }
+        
+        if (err.message.includes('timeout') || 
+            err.message.includes('connection')) {
+            // DB temporaire - 503
+            return res.status(503).json({ success: false, message: 'Service temporarily unavailable' })
+        }
+        
+        // ⚠️ Erreur système (bug) - 500
+        console.error('UNEXPECTED ERROR:', err)
+        res.status(500).json({ 
+            success: false, 
+            message: 'Internal server error'
+        })
+    }
+}

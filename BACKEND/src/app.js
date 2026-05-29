@@ -20,7 +20,8 @@ app.get('/', (req, res) => {
         message: 'API is running',
         endpoints: {
             products: '/api/products',
-            users: '/api/users'
+            users: '/api/users',
+            category: '/api/categories'
         }
     });
 });
