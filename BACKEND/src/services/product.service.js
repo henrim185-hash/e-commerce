@@ -31,7 +31,7 @@ export const verify_pagination = (page, pageSize = 50) => {
 export const verify_product_id = id => {
     const numericId = Number(id)
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (!Number.isInteger(numericId) || numericId <= 0) {
         throw createError('PRODUCT_ID_INVALID')
     }
 
