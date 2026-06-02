@@ -8,11 +8,11 @@ router.post('/users', userController.createUser)
 
 router.get('/users', userController.getAllUsers)
 
-router.get('/users/:id', userController.getUserById)
-
 router.get('/users/email/:email', userController.getUserByEmail)
 
 router.get('/users/search', userController.searchUsersByName)
+
+router.get('/users/:id', userController.getUserById)
 
 router.put('/users/:id/profile', userController.updateUserProfile)
 

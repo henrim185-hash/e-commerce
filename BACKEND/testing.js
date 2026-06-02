@@ -1,5 +1,5 @@
 async function getAlldata() {
-    const fetcher = await fetch(`http://localhost:5000/api/products`, {
+    const fetcher = await fetch(`http://localhost:5000/api/categories`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ async function getAlldata() {
 }
 
 async function getDataById(id) {
-    const fetcher = await fetch(`http://localhost:5000/api/products/${id}`, {
+    const fetcher = await fetch(`http://localhost:5000/api/categories/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -21,15 +21,15 @@ async function getDataById(id) {
 }
 
 async function PostData() {
-    const fetcher = await fetch(`http://localhost:5000/api/products`, {
+    const fetcher = await fetch(`http://localhost:5000/api/categories`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: 'pull oversized',
-            description: 'Bonjour les gens comment allez vous',
-            category_id: 2,
+            name: 'T-shirt',
+            description: 'Bon',
+            category_id: 'abc',
         }),
     })
     const response = await fetcher.json()
@@ -37,7 +37,7 @@ async function PostData() {
 }
 
 async function deleteData(id) {
-    const fetcher = await fetch(`http://localhost:5000/api/products/${id}`, {
+    const fetcher = await fetch(`http://localhost:5000/api/categories/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ async function deleteData(id) {
 }
 
 async function updateData(productId) {
-    const fetcher = await fetch(`http://localhost:5000/api/products/${productId}`, {
+    const fetcher = await fetch(`http://localhost:5000/api/categories/${productId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ async function updateData(productId) {
 
 
 async function deleteMultipleData() {
-    const fetcher = await fetch(`http://localhost:5000/api/products`, {
+    const fetcher = await fetch(`http://localhost:5000/api/categories`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ async function deleteMultipleData() {
 
 // PostData()
 // upDateData()
-// deleteData('5')
+// deleteData('16')
 // deleteMultipleData()
 // getDataById('4')
 // getAlldata()

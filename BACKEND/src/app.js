@@ -1,5 +1,5 @@
 import express from 'express'
-import cors from 'cors'
+import {corsConfig} from './config/cors.config.js'
 
 // import des routes
 import productRoutes from './routes/product.route.js'
@@ -10,23 +10,10 @@ import categoryRoutes from './routes/category.route.js'
 const app = express()
 
 // middlewares
-app.use(cors())
 app.use(express.json())
+app.use(corsConfig)
 
 // routes
-app.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'API is running',
-        endpoints: {
-            products: '/api/products',
-            users: '/api/users',
-            category: '/api/categories'
-        }
-    });
-});
-
-// routes produits
 app.use('/api', productRoutes)
 app.use('/api', userRoutes)
 app.use('/api', categoryRoutes)

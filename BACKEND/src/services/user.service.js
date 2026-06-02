@@ -1,4 +1,4 @@
-import pool from '../db/index.js'
+import pool from '../config/db.js'
 
 // ==================== SERVICES DE VÉRIFICATION (CHECKERS) ====================
 
@@ -15,6 +15,11 @@ export const verify_user_data = (name, email, password) => {
     }
 }
 
+export const verify_password = password => {
+    if (!password || password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+    }
+}
 
 // Vérifier si l'utilisateur existe
 export const user_exists = async id => {
