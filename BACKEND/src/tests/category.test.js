@@ -20,7 +20,7 @@ async function postData() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: 'T-shirt Bleu',
+            name: 'Pantalon Bleu',
             description: 'Vêtements tendance',
         }),
     })
@@ -36,7 +36,7 @@ async function updateData(id) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: 'T-shirt Premium',
+            name: 'Chemise Manche long',
             description: 'Nouvelle description',
         }),
     })
@@ -83,16 +83,16 @@ async function searchData(searchTerm) {
 
 // UTILISATION
 
-// getAllData()
+getAllData()
 // getAllData(2)
 
-// getDataById(1)
+// getDataById()
 
 // postData()
 
-// updateData(1)
+// updateData(10)
 
-// deleteData(13)
+// deleteData(10)
 
 // deleteMultipleData()
 

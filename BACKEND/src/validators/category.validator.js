@@ -1,17 +1,6 @@
-import pool from '../config/db.js'
 import { createError } from '../utils/createError.js'
 
-export const category_exists_by_id = async id => {
-    const result = await pool.query('SELECT id FROM categories WHERE id = $1', [id])
-    return result.rows.length > 0
-}
-
-export const category_has_products = async id => {
-    const result = await pool.query('SELECT id FROM products WHERE category_id = $1 LIMIT 1', [id])
-    return result.rows.length > 0
-}
-
-export const verify_category_data = name => {
+export const validate_category_data = name => {
     if (!name || name.trim() === '') {
         throw createError('CATEGORY_NAME_REQUIRED')
     }
@@ -40,7 +29,7 @@ export const verify_category_data = name => {
 }
 
 // VERIFIFIER ID
-export const verify_category_id = id => {
+export const validate_category_id = id => {
     const numericId = Number(id)
 
     if (!Number.isInteger(numericId) || numericId <= 0) {
@@ -50,16 +39,3 @@ export const verify_category_id = id => {
     return numericId
 }
 
-export const verify_category_update_data = (id, name) => {
-    if (!id) {
-        throw createError('CATEGORY_ID_REQUIRED')
-    }
-
-    const numericId = Number(id)
-
-    if (Number.isNaN(numericId) || numericId <= 0) {
-        throw createError('CATEGORY_ID_INVALID')
-    }
-
-    return verify_category_data(name)
-}

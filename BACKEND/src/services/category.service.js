@@ -2,17 +2,26 @@ import pool from '../config/db.js'
 import { createError } from '../utils/createError.js'
 import { generateSlug } from '../utils/createSlug.js'
 import {
-    category_exists_by_id,
-    category_has_products,
-    verify_category_data,
-    verify_category_id,
-    verify_category_update_data,
+    validate_category_data,
+    validate_category_id,
 } from '../validators/category.validator.js'
+
+// VERIFICATIONS
+
+export const category_exists_by_id = async id => {
+    const result = await pool.query('SELECT id FROM categories WHERE id = $1', [id])
+    return result.rows.length > 0
+}
+
+export const category_has_products = async id => {
+    const result = await pool.query('SELECT id FROM products WHERE category_id = $1 LIMIT 1', [id])
+    return result.rows.length > 0
+}
 
 // ==================== SERVICES CRUD ====================
 
 export const create_category = async name => {
-    const validatedName = verify_category_data(name)
+    const validatedName = validate_category_data(name)
 
     const slug = generateSlug(validatedName)
 
@@ -26,6 +35,8 @@ export const create_category = async name => {
     return result.rows[0]
 }
 
+
+// A revoir
 export const get_all_categories = async (limit = 100, offset = 0) => {
     const maxLimit = Math.min(limit, 500)
     const validOffset = Math.max(0, offset)
@@ -40,7 +51,7 @@ export const get_all_categories = async (limit = 100, offset = 0) => {
 }
 
 export const get_category_by_id = async id => {
-    const numericId = verify_category_id(id)
+    const numericId = validate_category_id(id)
 
     const result = await pool.query('SELECT * FROM categories WHERE id = $1', [numericId])
 
@@ -51,20 +62,8 @@ export const get_category_by_id = async id => {
     return result.rows[0]
 }
 
-export const get_category_by_slug = async slug => {
-    if (!slug || slug.trim() === '') {
-        throw createError('CATEGORY_SLUG_REQUIRED')
-    }
 
-    const result = await pool.query('SELECT * FROM categories WHERE slug = $1', [slug])
-
-    if (result.rows.length === 0) {
-        throw createError('CATEGORY_NOT_FOUND')
-    }
-
-    return result.rows[0]
-}
-
+// A revoir
 export const search_categories_by_name = async searchTerm => {
     if (!searchTerm || searchTerm.trim() === '') {
         return []
@@ -84,17 +83,18 @@ export const search_categories_by_name = async searchTerm => {
 }
 
 export const update_category = async (id, name) => {
-    const validatedName = verify_category_update_data(id, name)
+    const numericId = validate_category_id(id)
+    const validatedName = validate_category_data(name)
 
     const slug = generateSlug(validatedName)
 
     const result = await pool.query(
         `UPDATE categories
-             SET name = $1,
-                 slug = $2
-             WHERE id = $3
-             RETURNING *`,
-        [validatedName, slug, id],
+         SET name = $1,
+             slug = $2
+         WHERE id = $3
+         RETURNING *`,
+        [validatedName, slug, numericId],
     )
 
     if (result.rows.length === 0) {
@@ -105,14 +105,7 @@ export const update_category = async (id, name) => {
 }
 
 export const delete_category = async id => {
-    if (!id) {
-        throw createError('CATEGORY_ID_REQUIRED')
-    }
-
-    const numericId = Number(id)
-    if (Number.isNaN(numericId) || numericId <= 0) {
-        throw createError('CATEGORY_ID_INVALID')
-    }
+    const numericId = validate_category_id(id)
 
     if (!(await category_exists_by_id(numericId))) {
         throw createError('CATEGORY_NOT_FOUND')

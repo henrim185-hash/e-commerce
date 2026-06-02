@@ -2,15 +2,21 @@ import pool from '../config/db.js'
 import { createError } from '../utils/createError.js'
 
 import {
-    category_exists_by_id,
-    verify_pagination,
-    verify_product_id,
-    verify_product_data,
+    validate_pagination,
+    validate_product_id,
+    validate_product_data,
 } from '../validators/product.validator.js'
+
+
+// VERIFIER SI CATEGORIES EXISTE
+export const category_exists_by_id = async id => {
+    const result = await pool.query('SELECT id FROM categories WHERE id = $1', [id])
+    return result.rows.length > 0
+}
 
 // CREER UN PRODUIT
 export const create_product = async (name, description, category_id) => {
-    const validated = verify_product_data(name, description, category_id)
+    const validated = validate_product_data(name, description, category_id)
 
     const categoryExists = await category_exists_by_id(validated.category_id)
 
@@ -29,8 +35,10 @@ export const create_product = async (name, description, category_id) => {
 }
 
 // RECUPERER TOUS LES PRODUITS
+
+// A revoir
 export const get_all_product = async (page = 1) => {
-    const { page: safePage, pageSize, offset } = verify_pagination(page)
+    const { page: safePage, pageSize, offset } = validate_pagination(page)
 
     const result = await pool.query(
         `SELECT *
@@ -54,7 +62,7 @@ export const get_all_product = async (page = 1) => {
 
 // RECUPERER UN PRODUIT PAR SON ID
 export const get_product_by_id = async id => {
-    const numericId = verify_product_id(id)
+    const numericId = validate_product_id(id)
 
     const result = await pool.query('SELECT * FROM products WHERE id = $1', [numericId])
 
@@ -67,7 +75,7 @@ export const get_product_by_id = async id => {
 
 // METTRE A JOUR UN PRODUIT
 export const update_product = async (id, name, description, category_id) => {
-    const validated = verify_product_data(name, description, category_id)
+    const validated = validate_product_data(name, description, category_id)
 
     const categoryExists = await category_exists_by_id(validated.category_id)
 
@@ -75,7 +83,7 @@ export const update_product = async (id, name, description, category_id) => {
         throw createError('CATEGORY_NOT_FOUND')
     }
 
-    const numericId = verify_product_id(id)
+    const numericId = validate_product_id(id)
 
     const result = await pool.query(
         `UPDATE products
@@ -97,7 +105,7 @@ export const update_product = async (id, name, description, category_id) => {
 
 // SUPPRIMER UN PRODUIT
 export const delete_product = async id => {
-    const numericId = verify_product_id(id)
+    const numericId = validate_product_id(id)
 
     const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [numericId])
 

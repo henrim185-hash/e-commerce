@@ -29,7 +29,7 @@ async function createProduct() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: 'T-shirt Oversize',
+            name: 'T-shirt Premium',
             description: 'T-shirt oversize de très bonne qualité',
             category_id: 1,
         }),
@@ -46,7 +46,7 @@ async function updateProduct(id) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: 'Pull Oversize',
+            name: 'Pull Glo Gang',
             description: 'Pull oversize mis à jour avec succès',
             category_id: 1,
         }),
@@ -130,9 +130,9 @@ async function countProducts() {
 
 // createProduct()
 
-// updateProduct(11)
+// updateProduct(16)
 
-// deleteProduct()
+deleteProduct(110)
 
 // deleteMultipleProducts()
 

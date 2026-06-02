@@ -115,3 +115,807 @@ export const createCategory = async (req, res) => {
         })
     }
 }
+
+
+
+// db/index.js
+import pg from 'pg'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+// Configuration différente selon l'environnement
+const getPoolConfig = () => {
+    const baseConfig = {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+
+        return {
+            ...baseConfig,
+            statement_timeout: 5000,
+            query_timeout: 3000,
+            connectionTimeoutMillis: 3000, 
+            idleTimeoutMillis: 10000, 
+            max: 20, 
+            ssl: { rejectUnauthorized: true },
+        }
+    } else if (process.env.NODE_ENV === 'test') {
+      
+        return {
+            ...baseConfig,
+            statement_timeout: 30000, 
+            query_timeout: 20000,
+            connectionTimeoutMillis: 10000,
+            idleTimeoutMillis: 60000,
+            max: 10,
+        }
+    } else {
+        return {
+            ...baseConfig,
+            statement_timeout: 30000,
+            query_timeout: 20000,
+            connectionTimeoutMillis: 10000,
+            idleTimeoutMillis: 60000,
+            max: 10,
+
+        }
+    }
+}
+
+const pool = new pg.Pool(getPoolConfig())
+
+pool.on('error', (err, client) => {
+    if (err.code === '57014') {
+
+        console.error('Query timeout:', err.message)
+    } else {
+        console.error('Unexpected error on idle client', err)
+    }
+})
+
+export default pool
+
+
+
+
+
+
+
+// Act as a senior backend engineer.
+
+// Perform a strict code review of this project.
+
+// Check specifically:
+// 1. Logic bugs and incorrect behavior
+// 2. Database issues (unsafe queries, missing constraints, performance problems)
+// 3. Error handling consistency (especially PostgreSQL errors)
+// 4. Race conditions and concurrency issues
+// 5. Over-fetching / unnecessary queries
+// 6. API design and service/controller separation
+
+// Do NOT comment on:
+// - style
+// - formatting
+// - naming (unless it breaks logic)
+
+// For each issue:
+// - explain the problem clearly
+// - explain the risk in production
+// - propose a concrete fix
+
+// Be strict: do not miss important issues.
+
+
+// Act as a senior backend engineer doing a focused code audit.
+
+// Scope: ONLY the "category" domain (category service, category controller, category-related utils, validators).
+
+// Do NOT analyze any other part of the project.
+
+// Your goals:
+// 1. Detect bugs in category CRUD operations
+// 2. Verify PostgreSQL query correctness and efficiency
+// 3. Check error handling consistency (createError, error codes, handleError flow)
+// 4. Detect unnecessary database calls or inefficient loops
+// 5. Identify missing validations or unsafe inputs
+// 6. Check if business rules are correctly enforced (e.g. uniqueness, deletion rules)
+// 7. Detect race conditions or design flaws
+
+// Important:
+// - Ignore style issues
+// - Ignore naming unless it breaks logic
+// - Do not comment outside category module
+
+// Output format:
+// - Critical issues first
+// - Medium issues second
+// - Each issue must include explanation + fix
+   
+
+
+// Tu es un Senior Backend Engineer spécialisé Node.js, Express et PostgreSQL.
+
+// Analyse entièrement mon module Products et réalise un audit technique approfondi.
+
+// Contexte :
+
+// * Architecture : Routes → Controllers → Services → PostgreSQL
+// * Langage : JavaScript ES Modules
+// * Base de données : PostgreSQL
+// * Gestion des erreurs : createError() + handleError()
+// * Pagination implémentée
+// * CRUD complet implémenté
+// * Recherche par nom implémentée
+// * Suppression multiple implémentée
+
+// Je veux un audit professionnel portant sur :
+
+// 1. Architecture
+
+// * Respect de la séparation des responsabilités
+// * Qualité du découplage Controller / Service / Database
+// * Cohérence globale du module
+
+// 2. Qualité du code
+
+// * Lisibilité
+// * Maintenabilité
+// * Duplication de logique
+// * Nommage des fonctions et variables
+// * Respect des conventions backend modernes
+
+// 3. Validation
+
+// * Robustesse des validations
+// * Cas limites oubliés
+// * Risques de bugs
+// * Risques de contournement
+
+// 4. Sécurité
+
+// * SQL Injection
+// * Validation des entrées
+// * Exposition de données
+// * Gestion des erreurs
+// * Vulnérabilités potentielles
+
+// 5. PostgreSQL
+
+// * Qualité des requêtes SQL
+// * Utilisation des index
+// * Performance
+// * Requêtes inutiles
+// * Optimisations possibles
+
+// 6. Pagination
+
+// * Qualité de l'implémentation
+// * Cas limites
+// * Évolutivité
+// * Alternatives professionnelles
+
+// 7. Bulk Delete
+
+// * Fiabilité
+// * Cohérence métier
+// * Gestion des IDs inexistants
+// * Besoin éventuel de transaction
+
+// 8. Recherche
+
+// * Pertinence de l'implémentation ILIKE
+// * Optimisations possibles
+// * Limites de l'approche actuelle
+
+// 9. Niveau professionnel
+
+// * Estimation du niveau du développeur
+// * Junior / Intermédiaire / Confirmé
+// * Ce qui manque pour atteindre un niveau Senior
+
+// 10. Note finale
+//     Donne une note détaillée sur :
+
+// * Architecture /10
+// * Qualité du code /10
+// * Sécurité /10
+// * PostgreSQL /10
+// * Maintenabilité /10
+// * Niveau production /10
+
+// Pour chaque problème détecté :
+
+// * explique pourquoi c'est un problème
+// * indique son niveau de gravité (Faible, Moyen, Élevé)
+// * propose une correction concrète avec du code si nécessaire
+
+// Sois extrêmement critique et rigoureux. Ne cherche pas à être gentil. Agis comme lors d'une revue de code en entreprise avant une mise en production.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Passons à produit: import pool from '../config/db.js'
+
+import { createError } from '../utils/createError.js'
+
+
+
+import {
+
+    validate_pagination,
+
+    validate_product_id,
+
+    validate_product_data,
+
+} from '../validators/product.validator.js'
+
+
+
+// VERIFIER SI CATEGORIES EXISTE
+
+export const category_exists_by_id = async id => {
+
+    const result = await pool.query('SELECT id FROM categories WHERE id = $1', [id])
+
+    return result.rows.length > 0
+
+}
+
+
+
+// CREER UN PRODUIT
+
+export const create_product = async (name, description, category_id) => {
+
+    const validated = validate_product_data(name, description, category_id)
+
+
+
+    const categoryExists = await category_exists_by_id(validated.category_id)
+
+
+
+    if (!categoryExists) {
+
+        throw createError('CATEGORY_NOT_FOUND')
+
+    }
+
+
+
+    const result = await pool.query(
+
+        `INSERT INTO products (name, description, category_id)
+
+         VALUES ($1, $2, $3)
+
+         RETURNING *`,
+
+        [validated.name, validated.description, validated.category_id],
+
+    )
+
+
+
+    return result.rows[0]
+
+}
+
+
+
+// RECUPERER TOUS LES PRODUITS
+
+export const get_all_product = async (page = 1) => {
+
+    const { page: safePage, pageSize, offset } = validate_pagination(page)
+
+
+
+    const result = await pool.query(
+
+        `SELECT *
+
+         FROM products
+
+         ORDER BY id
+
+         LIMIT $1 OFFSET $2`,
+
+        [pageSize, offset],
+
+    )
+
+
+
+    const countResult = await pool.query(`SELECT COUNT(*) FROM products`)
+
+    const total = Number(countResult.rows[0].count)
+
+
+
+    return {
+
+        data: result.rows,
+
+        page: safePage,
+
+        pageSize,
+
+        total,
+
+        totalPages: Math.ceil(total / pageSize),
+
+    }
+
+}
+
+
+
+// RECUPERER UN PRODUIT PAR SON ID
+
+export const get_product_by_id = async id => {
+
+    const numericId = validate_product_id(id)
+
+
+
+    const result = await pool.query('SELECT * FROM products WHERE id = $1', [numericId])
+
+
+
+    if (result.rows.length === 0) {
+
+        throw createError('PRODUCT_NOT_FOUND')
+
+    }
+
+
+
+    return result.rows[0]
+
+}
+
+
+
+// METTRE A JOUR UN PRODUIT
+
+export const update_product = async (id, name, description, category_id) => {
+
+    const validated = validate_product_data(name, description, category_id)
+
+
+
+    const categoryExists = await category_exists_by_id(validated.category_id)
+
+
+
+    if (!categoryExists) {
+
+        throw createError('CATEGORY_NOT_FOUND')
+
+    }
+
+
+
+    const numericId = validate_product_id(id)
+
+
+
+    const result = await pool.query(
+
+        `UPDATE products
+
+         SET name = $1,
+
+             description = $2,
+
+             category_id = $3,
+
+             updated_at = NOW()
+
+         WHERE id = $4
+
+         RETURNING *`,
+
+        [validated.name, validated.description, validated.category_id, numericId],
+
+    )
+
+
+
+    if (result.rows.length === 0) {
+
+        throw createError('PRODUCT_NOT_FOUND')
+
+    }
+
+
+
+    return result.rows[0]
+
+}
+
+
+
+// SUPPRIMER UN PRODUIT
+
+export const delete_product = async id => {
+
+    const numericId = validate_product_id(id)
+
+
+
+    const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [numericId])
+
+
+
+    if (result.rows.length === 0) {
+
+        throw createError('PRODUCT_NOT_FOUND')
+
+    }
+
+
+
+    return result.rows[0]
+
+}
+
+
+
+// SUPPRIMER PLUSIEURS PRODUITS
+
+export const delete_multiple_products = async ids => {
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+
+        throw createError('PRODUCT_IDS_REQUIRED')
+
+    }
+
+
+
+    const numericIds = ids.map(Number)
+
+
+
+    if (numericIds.some(id => Number.isNaN(id) || id <= 0)) {
+
+        throw createError('PRODUCT_ID_INVALID')
+
+    }
+
+
+
+    // Vérifie les IDs existants
+
+    const existingProducts = await pool.query(
+
+        `SELECT id
+
+         FROM products
+
+         WHERE id = ANY($1)`,
+
+        [numericIds],
+
+    )
+
+
+
+    const existingIds = existingProducts.rows.map(row => row.id)
+
+
+
+    const missingIds = numericIds.filter(id => !existingIds.includes(id))
+
+
+
+    // Supprime les produits existants
+
+    const result = await pool.query(
+
+        `DELETE FROM products
+
+         WHERE id = ANY($1)
+
+         RETURNING *`,
+
+        [numericIds],
+
+    )
+
+
+
+    return {
+
+        deleted: result.rows,
+
+        missing: missingIds,
+
+        deletedCount: result.rows.length,
+
+        missingCount: missingIds.length,
+
+    }
+
+}
+
+
+
+// RECHERCHER UN PRODUIT PAR LE NOM
+
+export const search_products_by_name = async searchTerm => {
+
+    const SEARCH_LIMIT = 50
+
+
+
+    if (!searchTerm || searchTerm.trim() === '') {
+
+        throw createError('PRODUCT_SEARCH_TERM_REQUIRED')
+
+    }
+
+
+
+    const sanitizedTerm = searchTerm
+
+        .trim()
+
+        .replace(/[%_\\]/g, '\\$&')
+
+        .substring(0, 100)
+
+
+
+    const result = await pool.query(
+
+        `SELECT *
+
+         FROM products
+
+         WHERE name ILIKE $1
+
+         ORDER BY name
+
+         LIMIT $2`,
+
+        [`%${sanitizedTerm}%`, SEARCH_LIMIT],
+
+    )
+
+
+
+    return result.rows
+
+}
+
+
+
+// PRODUITS PAR CATEGORY
+
+export const get_products_by_category = async category_id => {
+
+    const numericCategoryId = Number(category_id)
+
+
+
+    if (Number.isNaN(numericCategoryId) || numericCategoryId <= 0) {
+
+        throw createError('PRODUCT_CATEGORY_INVALID')
+
+    }
+
+
+
+    const result = await pool.query(
+
+        `SELECT *
+
+         FROM products
+
+         WHERE category_id = $1
+
+         ORDER BY name`,
+
+        [numericCategoryId],
+
+    )
+
+
+
+    return result.rows
+
+}
+
+
+
+export const count_products = async () => {
+
+    const result = await pool.query('SELECT COUNT(*) FROM products')
+
+    return Number(result.rows[0].count)
+
+}  import pool from '../config/db.js'
+
+import { createError } from '../utils/createError.js'
+
+
+
+
+
+// VALIDATION DE PAGINATION
+
+export const validate_pagination = (page = 1, pageSize = 50) => {
+
+    const safePage = Number(page)
+
+    const safePageSize = Number(pageSize)
+
+
+
+    if (!Number.isInteger(safePage) || safePage < 1) {
+
+        throw createError('PAGINATION_PAGE_INVALID')
+
+    }
+
+
+
+    if (!Number.isInteger(safePageSize) || safePageSize < 1 || safePageSize > 100) {
+
+        throw createError('PAGINATION_LIMIT_INVALID')
+
+    }
+
+
+
+    return {
+
+        page: safePage,
+
+        pageSize: safePageSize,
+
+        offset: (safePage - 1) * safePageSize,
+
+    }
+
+}
+
+
+
+// VERIFIFIER ID
+
+export const validate_product_id = id => {
+
+    const numericId = Number(id)
+
+
+
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+
+        throw createError('PRODUCT_ID_INVALID')
+
+    }
+
+
+
+    return numericId
+
+}
+
+
+
+// VERIFIER LES DONNEES DE PRODUCT
+
+export const validate_product_data = (name, description, category_id) => {
+
+    if (!name || name.trim() === '') {
+
+        throw createError('PRODUCT_NAME_REQUIRED')
+
+    }
+
+
+
+    const trimmedName = name.trim()
+
+
+
+    if (trimmedName.length < 2) {
+
+        throw createError('PRODUCT_NAME_TOO_SHORT')
+
+    }
+
+
+
+    if (trimmedName.length > 100) {
+
+        throw createError('PRODUCT_NAME_TOO_LONG')
+
+    }
+
+
+
+    if (!description || description.trim() === '') {
+
+        throw createError('PRODUCT_DESCRIPTION_REQUIRED')
+
+    }
+
+
+
+    const trimmedDescription = description.trim()
+
+
+
+    if (trimmedDescription.length < 10) {
+
+        throw createError('PRODUCT_DESCRIPTION_TOO_SHORT')
+
+    }
+
+
+
+    if (trimmedDescription.length > 5000) {
+
+        throw createError('PRODUCT_DESCRIPTION_TOO_LONG')
+
+    }
+
+
+
+    if (!category_id) {
+
+        throw createError('PRODUCT_CATEGORY_INVALID')
+
+    }
+
+
+
+    const numericCategoryId = Number(category_id)
+
+
+
+    if (Number.isNaN(numericCategoryId) || numericCategoryId <= 0) {
+
+        throw createError('PRODUCT_CATEGORY_INVALID')
+
+    }
+
+
+
+    return {
+
+        name: trimmedName,
+
+        description: trimmedDescription,
+
+        category_id: numericCategoryId,
+
+    }
+
+}

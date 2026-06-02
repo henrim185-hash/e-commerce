@@ -49,21 +49,6 @@ export const getCategoryById = async (req, res) => {
     }
 }
 
-export const getCategoryBySlug = async (req, res) => {
-    try {
-        const { slug } = req.params
-
-        const category = await category_services.get_category_by_slug(slug)
-
-        res.status(200).json({
-            success: true,
-            message: 'Category retrieved successfully',
-            category,
-        })
-    } catch (err) {
-        handleError(err, res)
-    }
-}
 
 export const updateCategory = async (req, res) => {
     try {

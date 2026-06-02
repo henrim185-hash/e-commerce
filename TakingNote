@@ -137,3 +137,6 @@ CREATE INDEX idx_reviews_product ON reviews(product_id);
 CREATE DATABASE ecommerce_db;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX categories_name_trgm_idx ON categories USING gin (name gin_trgm_ops);
