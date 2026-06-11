@@ -31,7 +31,7 @@ async function createProduct() {
         body: JSON.stringify({
             name: 'T-shirt Premium',
             description: 'T-shirt oversize de très bonne qualité',
-            category_id: 1,
+            category_id: 100,
         }),
     })
 
@@ -124,15 +124,15 @@ async function countProducts() {
 
 // ==================== TESTS ====================
 
-// getAllProducts()
+// getAllProducts(1)
 
-// getProductById(11)
+// getProductById(101)
 
-// createProduct()
+createProduct()
 
 // updateProduct(16)
 
-deleteProduct(110)
+// deleteProduct(110)
 
 // deleteMultipleProducts()
 

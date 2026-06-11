@@ -1,8 +1,9 @@
 import * as product_services from '../services/product.service.js'
 import { handleError } from '../utils/handleError.js'
 
-// ==================== CRÉER UN PRODUIT ====================
-export const createProductController = async (req, res) => {
+
+// CREATE
+export const createProduct = async (req, res) => {
     try {
         const { name, description, category_id } = req.body
 
@@ -18,12 +19,12 @@ export const createProductController = async (req, res) => {
     }
 }
 
-// ==================== RÉCUPÉRER TOUS LES PRODUITS ====================
+// GET ALL
 export const getAllProducts = async (req, res) => {
     try {
-        const page = req.query.page
+        const page_query = req.query.page
 
-        const result = await product_services.get_all_product(page)
+        const result = await product_services.get_all_products(page_query)
 
         res.status(200).json({
             success: true,
@@ -31,7 +32,7 @@ export const getAllProducts = async (req, res) => {
             data: result.data,
             pagination: {
                 page: result.page,
-                pageSize: result.pageSize,
+                limit: result.limit,
                 total: result.total,
                 totalPages: result.totalPages,
             },
@@ -41,7 +42,7 @@ export const getAllProducts = async (req, res) => {
     }
 }
 
-// ==================== RÉCUPÉRER UN PRODUIT PAR ID ====================
+// GET BY ID
 export const getProductById = async (req, res) => {
     try {
         const { id } = req.params
@@ -58,7 +59,7 @@ export const getProductById = async (req, res) => {
     }
 }
 
-// ==================== METTRE À JOUR UN PRODUIT ====================
+// UPDATE
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params
@@ -81,7 +82,7 @@ export const updateProduct = async (req, res) => {
     }
 }
 
-// ==================== SUPPRIMER UN PRODUIT ====================
+// DELETE
 export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params
@@ -98,7 +99,7 @@ export const deleteProduct = async (req, res) => {
     }
 }
 
-// ==================== SUPPRIMER PLUSIEURS PRODUITS ====================
+// DELETE MULTIPLE
 export const deleteMultipleProducts = async (req, res) => {
     try {
         const { ids } = req.body
@@ -120,7 +121,7 @@ export const deleteMultipleProducts = async (req, res) => {
     }
 }
 
-// ==================== RECHERCHER DES PRODUITS PAR NOM ====================
+// SEARCH
 export const searchProductsByName = async (req, res) => {
     try {
         const { searchTerm } = req.query
@@ -138,25 +139,31 @@ export const searchProductsByName = async (req, res) => {
     }
 }
 
-// ==================== FILTRER LES PRODUITS PAR CATÉGORIE ====================
+// GET BY CATEGORY
 export const getProductsByCategory = async (req, res) => {
     try {
         const { category_id } = req.params
+        const page_query = req.query.page
 
-        const products = await product_services.get_products_by_category(category_id)
+        const result = await product_services.get_products_by_category(category_id, page_query)
 
         res.status(200).json({
             success: true,
             message: 'Products retrieved successfully',
-            data: products,
-            count: products.length,
+            data: result.data,
+            pagination: {
+                page: result.page,
+                limit: result.limit,
+                total: result.total,
+                totalPages: result.totalPages,
+            },
         })
     } catch (err) {
         handleError(err, res)
     }
 }
 
-// ==================== COMPTER LES PRODUITS ====================
+// COUNT
 export const countProducts = async (req, res) => {
     try {
         const count = await product_services.count_products()

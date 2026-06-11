@@ -4,7 +4,7 @@ import * as productController from '../controllers/product.controller.js'
 const router = express.Router()
 
 // CREATE
-router.post('/products', productController.createProductController)
+router.post('/products', productController.createProduct)
 
 // READ
 router.get('/products/count', productController.countProducts)

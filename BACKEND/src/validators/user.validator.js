@@ -1,54 +1,121 @@
 import { createError } from '../utils/createError.js'
-import pool from '../config/db.js'
 
-// ==================== CHECKERS ====================
+export const validate_user_data = (name, email, password) => {
+    const cleanName = validate_name(name)
+    const cleanEmail = validate_email(email)
+    const cleanPassword = validate_password(password)
 
-export const user_exists = async id => {
-    const result = await pool.query('SELECT id FROM users WHERE id = $1', [id])
-    return result.rows.length > 0
+    return {
+        name: cleanName,
+        email: cleanEmail,
+        password: cleanPassword,
+    }
 }
-
-export const email_exists = async email => {
-    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email])
-    return result.rows.length > 0
-}
-
-export const email_exists_for_other_user = async (email, currentUserId) => {
-    const result = await pool.query(
-        'SELECT id FROM users WHERE email = $1 AND id != $2',
-        [email, currentUserId],
-    )
-    return result.rows.length > 0
-}
-
-// ==================== VALIDATION ====================
-
-export const validate_user_data = (name, email, password) => {}
 
 export const validate_password = password => {
-    if (!password || password.length < 6) {
-        throw createError('INVALID_PASSWORD', 'Password must be at least 6 characters')
+    if (!password || typeof password !== 'string') {
+        throw createError('INVALID_PASSWORD')
     }
+
+    if (password.length < 6) {
+        throw createError('INVALID_PASSWORD')
+    }
+
+    return password
 }
 
 export const validate_role = role => {
+    if (!role || typeof role !== 'string') {
+        throw createError('INVALID_ROLE')
+    }
+
+    const normalized = role.trim().toLowerCase()
+
     const validRoles = ['customer', 'admin']
 
-    if (!validRoles.includes(role)) {
-        throw createError('INVALID_ROLE', 'Role must be customer or admin')
+    if (!validRoles.includes(normalized)) {
+        throw createError('INVALID_ROLE')
     }
+
+    return normalized
 }
 
 export const validate_email = email => {
-    if (!email || !email.includes('@')) {
-        throw createError('INVALID_EMAIL', 'Valid email is required')
+    if (!email || typeof email !== 'string') {
+        throw createError('INVALID_EMAIL')
     }
+
+    const normalized = email.trim().toLowerCase()
+
+    if (!normalized.includes('@')) {
+        throw createError('INVALID_EMAIL')
+    }
+
+    return normalized
 }
 
 export const validate_name = name => {
-    if (!name || name.trim() === '') {
-        throw createError('INVALID_NAME', 'Name is required')
+    if (!name || typeof name !== 'string') {
+        throw createError('INVALID_NAME')
     }
+
+    const trimmed = name.trim()
+
+    if (trimmed === '') {
+        throw createError('INVALID_NAME')
+    }
+
+    if (trimmed.length > 100) {
+        throw createError('USER_NAME_TOO_LONG')
+    }
+
+    return trimmed
 }
 
-export const validate_user_data = (name, email, password) => {}
+export const validate_user_id = id => {
+    const numericId = Number(id)
+
+    if (!Number.isInteger(numericId) || numericId <= 0 || Number.isNaN(numericId)) {
+        throw createError('USER_ID_INVALID')
+    }
+
+    return numericId
+}
+
+export const validate_user_ids = ids => {
+    if (!Array.isArray(ids)) {
+        throw createError('INVALID_USER_IDS')
+    }
+
+    if (ids.length === 0) {
+        throw createError('INVALID_USER_IDS')
+    }
+
+    const numericIds = ids.map(id => Number(id))
+
+    const hasInvalid = numericIds.some(id => !Number.isInteger(id) || id <= 0)
+
+    if (hasInvalid) {
+        throw createError('INVALID_USER_ID')
+    }
+
+    return numericIds
+}
+
+export const validate_search_term = term => {
+    if (!term || typeof term !== 'string') {
+        throw createError('INVALID_SEARCH_TERM')
+    }
+
+    const trimmed = term.trim()
+
+    if (trimmed.length === 0) {
+        throw createError('INVALID_SEARCH_TERM')
+    }
+
+    if (trimmed.length > 100) {
+        throw createError('INVALID_SEARCH_TERM')
+    }
+
+    return trimmed
+}

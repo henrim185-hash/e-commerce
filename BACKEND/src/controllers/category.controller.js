@@ -1,7 +1,7 @@
 import * as category_services from '../services/category.service.js'
 import { handleError } from '../utils/handleError.js'
 
-// ==================== CRÉER ====================
+// CREATE
 export const createCategory = async (req, res) => {
     try {
         const { name } = req.body
@@ -11,28 +11,37 @@ export const createCategory = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Category created successfully',
-            category: newCategory,
+            data: newCategory,
         })
     } catch (err) {
         handleError(err, res)
     }
 }
 
+// GET ALL
 export const getAllCategories = async (req, res) => {
     try {
-        const categories = await category_services.get_all_categories()
+        const page_query = req.query.page
+
+        const result = await category_services.get_all_categories(page_query)
 
         res.status(200).json({
             success: true,
             message: 'Categories retrieved successfully',
-            categories,
-            count: categories.length,
+            data: result.data,
+            pagination: {
+                page: result.page,
+                limit: result.limit,
+                total: result.total,
+                totalPages: result.totalPages,
+            },
         })
     } catch (err) {
         handleError(err, res)
     }
 }
 
+// GET BY ID
 export const getCategoryById = async (req, res) => {
     try {
         const { id } = req.params
@@ -42,14 +51,14 @@ export const getCategoryById = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Category retrieved successfully',
-            category,
+            data: category,
         })
     } catch (err) {
         handleError(err, res)
     }
 }
 
-
+// UPDATE
 export const updateCategory = async (req, res) => {
     try {
         const { id } = req.params
@@ -60,13 +69,14 @@ export const updateCategory = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Category updated successfully',
-            category,
+            data: category,
         })
     } catch (err) {
         handleError(err, res)
     }
 }
 
+// DELETE
 export const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params
@@ -76,13 +86,36 @@ export const deleteCategory = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Category deleted successfully',
-            category,
+            data: category,
         })
     } catch (err) {
         handleError(err, res)
     }
 }
 
+// DELETE MULTIPLE
+export const deleteMultipleCategories = async (req, res) => {
+    try {
+        const { ids } = req.body
+
+        const result = await category_services.delete_multiple_categories(ids)
+
+        res.status(200).json({
+            success: true,
+            message: `${result.deletedCount} categories deleted successfully`,
+            data: {
+                deleted: result.deleted,
+                missing: result.missing,
+                deletedCount: result.deletedCount,
+                missingCount: result.missingCount,
+            },
+        })
+    } catch (err) {
+        handleError(err, res)
+    }
+}
+
+// SEARCH
 export const searchCategories = async (req, res) => {
     try {
         const { searchTerm } = req.query
@@ -92,7 +125,7 @@ export const searchCategories = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Categories retrieved successfully',
-            categories,
+            data: categories,
             count: categories.length,
         })
     } catch (err) {

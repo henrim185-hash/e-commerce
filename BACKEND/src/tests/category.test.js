@@ -83,10 +83,10 @@ async function searchData(searchTerm) {
 
 // UTILISATION
 
-getAllData()
+// getAllData()
 // getAllData(2)
 
-// getDataById()
+// getDataById(7)
 
 // postData()
 

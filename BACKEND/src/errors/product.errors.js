@@ -48,18 +48,20 @@ export const productErrorMap = {
         status: 409,
         message: 'Product already exists',
     },
-
-    PRODUCT_SEARCH_TERM_REQUIRED: {
-        status: 400,
-        message: 'Search term is required',
-    },
-
     NO_PRODUCTS_FOUND: {
         status: 404,
         message: 'No products found',
+    },
+    INVALID_PRODUCT_ID: {
+        status: 400,
+        message: 'One or more IDs are invalid',
     },
     PRODUCT_ID_INVALID: { status: 400, message: 'Invalid product id' },
     PRODUCT_IDS_REQUIRED: { status: 400, message: 'Product ids are required' },
     PAGINATION_PAGE_INVALID: { status: 400, message: 'Invalid page parameter' },
     PAGINATION_LIMIT_INVALID: { status: 400, message: 'Invalid pagination limit' },
+    TOO_MANY_PRODUCT_IDS: {
+        status: 400,
+        message: 'Too many product IDs provided. Maximum limit exceeded.',
+    },
 }

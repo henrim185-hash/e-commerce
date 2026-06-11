@@ -1,8 +1,6 @@
 import * as user_services from '../services/user.service.js'
+import { handleError } from '../utils/handleError.js'
 
-// ==================== CRÉER ====================
-
-// Créer un nouvel utilisateur
 export const createUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body
@@ -12,137 +10,88 @@ export const createUser = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'User created successfully',
-            user: newUser,
+            data: newUser,
         })
     } catch (err) {
-        if (err.message === 'Email already exists') {
-            res.status(409).json({
-                success: false,
-                message: err.message,
-            })
-        } else if (
-            err.message === 'Password must be at least 6 characters' ||
-            err.message === 'Name is required' ||
-            err.message === 'Valid email is required'
-        ) {
-            res.status(400).json({
-                success: false,
-                message: err.message,
-            })
-        } else {
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-            })
-        }
+        handleError(err, res)
     }
 }
 
-// ==================== LIRE (READ) ====================
-
-// Récupérer tous les utilisateurs
 export const getAllUsers = async (req, res) => {
     try {
-        const allUsers = await user_services.get_all_users()
+        const page_query = req.query.page
+
+        const result = await user_services.get_all_users(page_query)
 
         res.status(200).json({
             success: true,
             message: 'Users retrieved successfully',
-            users: allUsers,
-            count: allUsers.length,
+            data: result.data,
+            pagination: {
+                page: result.page,
+                limit: result.limit,
+                total: result.total,
+                totalPages: result.totalPages,
+            },
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        })
+        handleError(err, res)
     }
 }
 
-// Récupérer un utilisateur par ID
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params
         const user = await user_services.get_user_by_id(id)
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found',
-            })
-        }
-
         res.status(200).json({
             success: true,
             message: 'User retrieved successfully',
-            user: user,
+            data: user,
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        })
+        handleError(err, res)
     }
 }
 
-// Récupérer un utilisateur par email
 export const getUserByEmail = async (req, res) => {
     try {
         const { email } = req.params
 
         const user = await user_services.get_user_by_email(email)
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found',
-            })
-        }
-
         res.status(200).json({
             success: true,
             message: 'User retrieved successfully',
-            user: user,
+            data: user,
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        })
+        handleError(err, res)
     }
 }
-
-// Rechercher des utilisateurs par nom
+// Corriger ce controller avec pagination, intégrer dans les autres controller aussi. 
 export const searchUsersByName = async (req, res) => {
     try {
-        const { searchTerm } = req.query
-
-        if (!searchTerm) {
-            return res.status(400).json({
-                success: false,
-                message: 'Search term is required',
-            })
-        }
-
-        const users = await user_services.search_users_by_name(searchTerm)
+        const { searchTerm, page } = req.query
+        const pageNumber = Number(req.query.page) || 1
+        const result = await user_services.search_users_by_name(searchTerm, pageNumber)
 
         res.status(200).json({
             success: true,
             message: 'Users retrieved successfully',
-            users: users,
-            count: users.length,
+            data: result.data,
+            pagination: {
+                page: result.page,
+                limit: result.limit,
+                total: result.total,
+                totalPages: result.totalPages,
+            },
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        })
+        handleError(err, res)
     }
 }
 
-// ==================== METTRE À JOUR (UPDATE) ====================
-
-// Mettre à jour le profil d’un utilisateur
 export const updateUserProfile = async (req, res) => {
     try {
         const { id } = req.params
@@ -153,37 +102,13 @@ export const updateUserProfile = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'User profile updated successfully',
-            user: updatedUser,
+            data: updatedUser,
         })
     } catch (err) {
-        if (err.message === 'User not found') {
-            res.status(404).json({
-                success: false,
-                message: err.message,
-            })
-        } else if (err.message === 'Email already in use by another user') {
-            res.status(409).json({
-                success: false,
-                message: err.message,
-            })
-        } else if (
-            err.message === 'Name is required' ||
-            err.message === 'Valid email is required'
-        ) {
-            res.status(400).json({
-                success: false,
-                message: err.message,
-            })
-        } else {
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-            })
-        }
+        handleError(err, res)
     }
 }
 
-// Mettre à jour le mot de passe d’un utilisateur
 export const updateUserPassword = async (req, res) => {
     try {
         const { id } = req.params
@@ -194,29 +119,13 @@ export const updateUserPassword = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Password updated successfully',
-            user: updatedUser,
+            data: updatedUser,
         })
     } catch (err) {
-        if (err.message === 'User not found') {
-            res.status(404).json({
-                success: false,
-                message: err.message,
-            })
-        } else if (err.message === 'Password must be at least 6 characters') {
-            res.status(400).json({
-                success: false,
-                message: err.message,
-            })
-        } else {
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-            })
-        }
+        handleError(err, res)
     }
 }
 
-// Mettre à jour le rôle d’un utilisateur
 export const updateUserRole = async (req, res) => {
     try {
         const { id } = req.params
@@ -227,80 +136,46 @@ export const updateUserRole = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'User role updated successfully',
-            user: updatedUser,
+            data: updatedUser,
         })
     } catch (err) {
-        if (err.message === 'User not found') {
-            res.status(404).json({
-                success: false,
-                message: err.message,
-            })
-        } else if (err.message === 'Invalid role. Must be customer or admin') {
-            res.status(400).json({
-                success: false,
-                message: err.message,
-            })
-        } else {
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-            })
-        }
+        handleError(err, res)
     }
 }
 
-// ==================== SUPPRIMER (DELETE) ====================
-
-// Supprimer un utilisateur
 export const deleteUser = async (req, res) => {
     try {
         const { id } = req.params
 
-        await user_services.delete_user(id)
+        const delete_user = await user_services.delete_user(id)
 
         res.status(200).json({
             success: true,
             message: 'User deleted successfully',
+            data: delete_user,
         })
     } catch (err) {
-        if (err.message === 'User not found') {
-            res.status(404).json({
-                success: false,
-                message: err.message,
-            })
-        } else {
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-            })
-        }
+        handleError(err, res)
     }
 }
 
-// Supprimer plusieurs utilisateurs
 export const deleteMultipleUsers = async (req, res) => {
     try {
         const { ids } = req.body
 
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valid ids array is required',
-            })
-        }
-
-        const deletedUsers = await user_services.delete_multiple_users(ids)
+        const result = await user_services.delete_multiple_users(ids)
 
         res.status(200).json({
             success: true,
-            message: `${deletedUsers.length} users deleted successfully`,
-            users: deletedUsers,
-            count: deletedUsers.length,
+            message: `${result.deletedCount} users deleted successfully`,
+            data: {
+                deleted: result.deleted,
+                missing: result.missing,
+                deletedCount: result.deletedCount,
+                missingCount: result.missingCount,
+            },
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-        })
+        handleError(err, res)
     }
 }

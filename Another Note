@@ -354,7 +354,7 @@ export default pool
 
 
 
-Passons à produit: import pool from '../config/db.js'
+// Passons à produit: import pool from '../config/db.js'
 
 import { createError } from '../utils/createError.js'
 
@@ -758,7 +758,8 @@ export const count_products = async () => {
 
     return Number(result.rows[0].count)
 
-}  import pool from '../config/db.js'
+}
+import pool from '../config/db.js'
 
 import { createError } from '../utils/createError.js'
 

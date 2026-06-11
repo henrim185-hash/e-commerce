@@ -1,26 +1,5 @@
-import pool from '../config/db.js'
+import { validate_category_id } from './category.validator.js'
 import { createError } from '../utils/createError.js'
-
-
-// VALIDATION DE PAGINATION
-export const validate_pagination = (page = 1, pageSize = 50) => {
-    const safePage = Number(page)
-    const safePageSize = Number(pageSize)
-
-    if (!Number.isInteger(safePage) || safePage < 1) {
-        throw createError('PAGINATION_PAGE_INVALID')
-    }
-
-    if (!Number.isInteger(safePageSize) || safePageSize < 1 || safePageSize > 100) {
-        throw createError('PAGINATION_LIMIT_INVALID')
-    }
-
-    return {
-        page: safePage,
-        pageSize: safePageSize,
-        offset: (safePage - 1) * safePageSize,
-    }
-}
 
 // VERIFIFIER ID
 export const validate_product_id = id => {
@@ -35,6 +14,10 @@ export const validate_product_id = id => {
 
 // VERIFIER LES DONNEES DE PRODUCT
 export const validate_product_data = (name, description, category_id) => {
+    if (typeof name !== 'string') {
+        throw createError('PRODUCT_NAME_REQUIRED')
+    }
+
     if (!name || name.trim() === '') {
         throw createError('PRODUCT_NAME_REQUIRED')
     }
@@ -47,6 +30,10 @@ export const validate_product_data = (name, description, category_id) => {
 
     if (trimmedName.length > 100) {
         throw createError('PRODUCT_NAME_TOO_LONG')
+    }
+
+    if (typeof description !== 'string') {
+        throw createError('PRODUCT_DESCRIPTION_REQUIRED')
     }
 
     if (!description || description.trim() === '') {
@@ -63,15 +50,7 @@ export const validate_product_data = (name, description, category_id) => {
         throw createError('PRODUCT_DESCRIPTION_TOO_LONG')
     }
 
-    if (!category_id) {
-        throw createError('PRODUCT_CATEGORY_INVALID')
-    }
-
-    const numericCategoryId = Number(category_id)
-
-    if (Number.isNaN(numericCategoryId) || numericCategoryId <= 0) {
-        throw createError('PRODUCT_CATEGORY_INVALID')
-    }
+    const numericCategoryId = validate_category_id(category_id)
 
     return {
         name: trimmedName,

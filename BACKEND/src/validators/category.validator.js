@@ -1,6 +1,10 @@
 import { createError } from '../utils/createError.js'
 
 export const validate_category_data = name => {
+    if (typeof name !== 'string') {
+        throw createError('CATEGORY_NAME_REQUIRED')
+    }
+
     if (!name || name.trim() === '') {
         throw createError('CATEGORY_NAME_REQUIRED')
     }
@@ -28,7 +32,6 @@ export const validate_category_data = name => {
     return trimmedName
 }
 
-// VERIFIFIER ID
 export const validate_category_id = id => {
     const numericId = Number(id)
 
@@ -38,4 +41,3 @@ export const validate_category_id = id => {
 
     return numericId
 }
-

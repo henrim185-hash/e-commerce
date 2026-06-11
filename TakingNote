@@ -28,6 +28,7 @@ CREATE TABLE products (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   category_id INT REFERENCES categories(id) ON DELETE SET NULL,
+  updated_at TIMESTAMP DEFAULT NOW();
   created_at TIMESTAMP DEFAULT NOW()
 );
 
